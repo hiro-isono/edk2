@@ -79,6 +79,14 @@ SiI3132AtaPassThruCommand (
     SATA_TRACE ("SiI3132AtaPassThru() EFI_ATA_PASS_THRU_PROTOCOL_ATA_SOFTWARE_RESET");
     Control = PRB_CTRL_SRST;
 
+    SATA_PORT_READ32 (SataPort->RegBase + SII3132_PORT_INTSTATUS_REG, &Value32);
+    Timeout = 1000;
+    while (Timeout && !(Value32 & IrqMask)) {
+      gBS->Stall (1);
+      SATA_PORT_READ32 (SataPort->RegBase + SII3132_PORT_INTSTATUS_REG, &Value32);
+      Timeout--;
+    }
+
     if (FeaturePcdGet (PcdSataSiI3132FeaturePMPSupport)) {
         SataPort->HostPRB->Fis.Control = 0x0F;
     }
